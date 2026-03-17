@@ -8,6 +8,8 @@ type SocialAccount = {
   username: string;
   displayName?: string | null;
   timezone: string;
+  accessToken?: string | null;
+  apiAccountId?: string | null;
 };
 
 type ContentItem = {
@@ -95,6 +97,20 @@ export function App() {
     refreshAll();
   }
 
+  async function handleConnectInstagram(accountId: string) {
+    const res = await axios.get<{ url: string }>("/api/auth/instagram/url", {
+      params: { accountId },
+    });
+    window.location.href = res.data.url;
+  }
+
+  async function handleConnectTikTok(accountId: string) {
+    const res = await axios.get<{ url: string }>("/api/auth/tiktok/url", {
+      params: { accountId },
+    });
+    window.location.href = res.data.url;
+  }
+
   return (
     <div className="app">
       <header className="app-header">
@@ -166,7 +182,27 @@ export function App() {
                   <div className="list-title">{acc.displayName || acc.username}</div>
                   <div className="list-subtitle">@{acc.username}</div>
                 </div>
-                <div className="list-meta">{acc.timezone}</div>
+                <div className="list-meta">
+                  <div>{acc.timezone}</div>
+                  {acc.platform === "instagram" && (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => handleConnectInstagram(acc.id)}
+                    >
+                      {acc.accessToken ? "Conectada" : "Conectar IG"}
+                    </button>
+                  )}
+                  {acc.platform === "tiktok" && (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => handleConnectTikTok(acc.id)}
+                    >
+                      {acc.accessToken ? "Conectada" : "Conectar TikTok"}
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
