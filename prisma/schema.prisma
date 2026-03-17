@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SocialAccount {
+  id             String           @id @default(cuid())
+  platform       String           // "instagram" | "tiktok"
+  username       String
+  displayName    String?
+  avatarUrl      String?
+  apiAccountId   String?          // ID de la cuenta en la API externa
+  accessToken    String?          // tokens de API (en producción, cifrar o mover)
+  refreshToken   String?
+  timezone       String           @default("UTC")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  scheduledPosts ScheduledPost[]
+}
+
+model ContentItem {
+  id             String           @id @default(cuid())
+  title          String
+  description    String?
+  mediaUrl       String?          // URL a la pieza (por ejemplo en tu storage)
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  scheduledPosts ScheduledPost[]
+}
+
+model ScheduledPost {
+  id             String         @id @default(cuid())
+  account        SocialAccount  @relation(fields: [accountId], references: [id])
+  accountId      String
+  content        ContentItem    @relation(fields: [contentId], references: [id])
+  contentId      String
+  scheduledAt    DateTime       // fecha y hora de publicación (en timezone de la cuenta)
+  status         String         @default("scheduled") // "scheduled" | "published" | "failed" | "draft"
+  publishedAt    DateTime?
+  externalPostId String?        // ID del post en la red social
+  errorMessage   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
